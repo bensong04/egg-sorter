@@ -4,8 +4,8 @@ from math import sqrt
 import glob
 from copy import copy as copy
 
-hep_mm_l = 1
-tri_mm_l = 2
+hep_mm_l = 1/3
+tri_mm_l = 1
 
 def get_contours(f: str):
     img = cv2.imread(f, cv2.IMREAD_COLOR)
