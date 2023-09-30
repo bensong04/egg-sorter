@@ -4,8 +4,10 @@ from math import sqrt
 import glob
 from copy import copy as copy
 
-hep_mm_l = 1/3
-tri_mm_l = 1
+hep_scale = 0.595 # area of the heptagon in mm^2
+# px * sqrt(mm^2 / px^2) <== CONVERSION BETWEEN PX TO MM
+hep_mm_l = 1.0
+tri_mm_l = 1.5
 
 def get_contours(f: str):
     img = cv2.imread(f, cv2.IMREAD_COLOR)
@@ -44,8 +46,8 @@ def get_contours(f: str):
     cv2.drawContours(image=tlcol, contours=mtc, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
     cv2.drawContours(image=blcol, contours=mbc, contourIdx=-1, color=(0, 255, 0), thickness=2, lineType=cv2.LINE_AA)
 
-    sl_top_hep = sqrt(cv2.contourArea(mtc))/2
-    sl_btm_tri = 2*sqrt(cv2.contourArea(mbc)/sqrt(3))
+    sl_top_hep = sqrt(cv2.contourArea(mtc) / 0.595)  # in px, TOP SIDE ONLY
+    sl_btm_tri = 2*sqrt(cv2.contourArea(mbc)/sqrt(3)) # in px
 
     top_r = round(hep_mm_l/sl_top_hep, 5)
     btm_r = round(tri_mm_l/sl_btm_tri, 5)
