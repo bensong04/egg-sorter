@@ -1,3 +1,5 @@
+### DEMO ###
+
 import cv2
 import numpy as np
 from math import sqrt
@@ -19,10 +21,10 @@ def get_contours(f: str):
     cropdist = 150
     tlcol = copy(img[0:cropdist, 0:cropdist])
     blcol = copy(img[height-cropdist:height, 0:cropdist])
-    gray = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
+    cut_image = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
 
-    topleft = gray[0:cropdist, 0:cropdist]
-    bottomleft = gray[height-cropdist:height, 0:cropdist] # Y, X ORDERING: CHANGE CHANNELLESS CROPPING TO REFLECT THIS
+    topleft = cut_image[0:cropdist, 0:cropdist]
+    bottomleft = cut_image[height-cropdist:height, 0:cropdist] # Y, X ORDERING: CHANGE CHANNELLESS CROPPING TO REFLECT THIS
 
     kernel = (5,)*2
     topleft = cv2.GaussianBlur(topleft, kernel, cv2.BORDER_DEFAULT)
