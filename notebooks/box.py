@@ -24,7 +24,7 @@ def enclosing_rect(idim: Tuple[int, int], center: Tuple[int, int], radius: int, 
         min(center[1]+radius+margins, idim[1])
         )
 
-def box_image(in_fp: str, out_dir: str, debug: bool=False) -> int:
+def box_image(in_fp: str, out_dir: str, curr_count: int=-1, max_count: int=-1, debug: bool=False) -> int:
     """
     Returns the number of eggs found in the image.
     """
@@ -41,7 +41,9 @@ def box_image(in_fp: str, out_dir: str, debug: bool=False) -> int:
     detected_circles = cv2.HoughCircles(blurred_edges, 
                         cv2.HOUGH_GRADIENT, 0.5, 20, param1 = 10,
                     param2 = 30, minRadius = 25, maxRadius = 36)
-
+    if detected_circles is None:
+        return 0
+    
     # load the original image in color
     original_color = cv2.imread(in_fp, cv2.IMREAD_COLOR)  
     # draw and display detected circles if debug mode is on
@@ -57,6 +59,8 @@ def box_image(in_fp: str, out_dir: str, debug: bool=False) -> int:
         raise
     
     for egg_number, circ in enumerate(detected_circles[0, :]):
+        if max_count != -1 and curr_count + egg_number + 1 > max_count:
+            break
         cx, cy, rad = int(circ[0]), int(circ[1]), int(circ[2]) 
         og_dimensions = (original_color.shape[1], original_color.shape[0])
         leftx, upy, rightx, downy = enclosing_rect(og_dimensions, (cx, cy), rad, 8)
@@ -64,8 +68,11 @@ def box_image(in_fp: str, out_dir: str, debug: bool=False) -> int:
         egg_path = os.path.join(out_dir, "%d_egg_%d.png" % (hash_fp, egg_number))
         cv2.imwrite(egg_path, cropped_egg)
 
+    return len(detected_circles[0, :])
+
 import argparse
 import glob
+import sys
 
 parser = argparse.ArgumentParser(description="") # TODO: write more detailed description
 
@@ -76,9 +83,20 @@ parser.add_argument("-m", "--maximum")
 args = parser.parse_args()
 in_drc = args.directory
 out_drc = args.output
-max_boxes = args.maximum
+max_boxes = int(args.maximum) if args.maximum is not None else -1
 
-if not os.path.exists(args.directory):
+if not os.path.exists(in_drc):
+    raise IOError("%s is not a valid directory or filepath." % args.directory)
+if not os.path.exists(out_drc):
     raise IOError("%s is not a valid directory or filepath." % args.directory)
 
+all_tiffs = glob.glob(os.path.join(in_drc, "*.tif"))
+curr_count_eggs = 0
+tiff_no = 0
+for tiff in all_tiffs:
+    tiff_no += 1
+    curr_count_eggs += box_image(tiff, out_drc, curr_count_eggs, max_boxes)
+    if max_boxes != -1 and curr_count_eggs >= max_boxes:
+        break
 
+sys.stdout.write("Successfully boxed %d channel images into %d egg images" % (tiff_no, curr_count_eggs))
