@@ -64,13 +64,6 @@ def box_image(in_fp: str, out_dir: str, debug: bool=False) -> int:
         egg_path = os.path.join(out_dir, "%d_egg_%d.png" % (hash_fp, egg_number))
         cv2.imwrite(egg_path, cropped_egg)
 
-if DEBUG_MODE:
-    box_image("/Users/ben/Documents/stanford/egg-sorter/notebooks/20231019/am/thaw/good/0007.tif", "", DEBUG_MODE)
-
-box_image("/Users/ben/Documents/stanford/egg-sorter/notebooks/20231019/am/thaw/good/0007.tif", 
-          "/Users/ben/Documents/stanford/egg-sorter/test7/")
-raise
-
 import argparse
 import glob
 
