@@ -28,7 +28,10 @@ beta = 0
 
 def disp(f):
     ycut = 200
-    img = cv2.imread(f, cv2.IMREAD_COLOR)
+    img_original = cv2.imread(f, cv2.IMREAD_COLOR)
+    bg = cv2.imread("res/bg.jpg", cv2.IMREAD_COLOR)
+    img = cv2.subtract(img_original, bg)
+    
     gray = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
 
     gray = gray[ycut:img.shape[0], 0:img.shape[1]//2]
@@ -54,9 +57,9 @@ def disp(f):
             y_vals.append(b)
             x_dep_vals.append(a)
 
-        cv2.circle(img, (a, b+ycut), r, (0, 255, 0), 2)
+        cv2.circle(img_original, (a, b+ycut), r, (0, 255, 0), 2)
 
-        cv2.circle(img, (a, b+ycut), 1, (0, 0, 255), 3)
+        cv2.circle(img_original, (a, b+ycut), 1, (0, 0, 255), 3)
 
     guess = [1/220, 200, 0.2, 350]
     sin_fit_params = spo.curve_fit(vert_sine, y_vals, x_dep_vals, guess)[0]
@@ -68,8 +71,9 @@ def disp(f):
             last_pt = (round(sin_fit_f(i)), round(i)+ycut)
         else:
             cur_pt = (round(sin_fit_f(i)), round(i)+ycut)
-            cv2.line(img, last_pt, cur_pt, (255, 0, 0), 2)
+            cv2.line(img_original, last_pt, cur_pt, (255, 0, 0), 2)
             last_pt = cur_pt
+    
     # GUESS #
     '''
     last_pt = ()
@@ -87,9 +91,9 @@ def disp(f):
     for center_x, center_y, _ in detected_circles[0, :]:
         min_pt = int(spo.minimize(sq_dist_from_point_on_sine, center_y, (center_x, center_y), method='Powell').x[0])
         
-        cv2.line(img, (int(center_x), int(center_y)+ycut), (int(sin_fit_f(min_pt)), min_pt+ycut), (0, 255, 255), 2)
+        cv2.line(img_original, (int(center_x), int(center_y)+ycut), (int(sin_fit_f(min_pt)), min_pt+ycut), (0, 255, 255), 2)
 
-    cv2.imshow("Result Image", img)
+    cv2.imshow("Result Image", img_original)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 

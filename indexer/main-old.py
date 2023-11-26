@@ -18,7 +18,7 @@ tri_mm_l = 1.5 # side length of the equilateral triangle marker, in mm
 scale_factor = 2 # Larger indicator / smaller indicator, in mm/mm
 
 # Adding contrast and brightness by applying an affine transformation to the original image.
-alpha = 1
+alpha = 0.3
 beta = 0 
 
 # To locate the indicators, we focus on the regions where they are, cropping out extraneous regions of the image.
@@ -46,7 +46,7 @@ def vert_sine_fixed_freq(y, ampl, phase, off):
 # properly fitting this function to the data. Therefore, it remains unused.
 boxy = lambda x: tanh(5*sin(x))
 
-f = fls[1] # TO BE PROPERLY IMPLEMENTED LATER
+f = fls[2] # TO BE PROPERLY IMPLEMENTED LATER
 
 img = cv2.imread(f, cv2.IMREAD_COLOR)
 height = img.shape[0]
@@ -99,36 +99,13 @@ canonical = (top_r + btm_r)/2
 #############################################################################
 
 transformed = cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
-bg = cv2.imread("res/bg.jpg", cv2.IMREAD_COLOR)
-transformed = cv2.subtract(transformed, bg)
+
 transformed = transformed[ycut:img.shape[0], 0:img.shape[1]//3]
-
 gray = cv2.cvtColor(transformed, cv2.COLOR_BGR2GRAY)
-#gray = cv2.convertScaleAbs(gray, alpha=2, beta=-10)
-gray = cv2.GaussianBlur(gray, (5,5), cv2.BORDER_DEFAULT)
-_, gray = cv2.threshold(gray,40,255,cv2.THRESH_TOZERO)
-
-cv2.imshow("Result Image", gray)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-mat = np.ones((5, 5), np.uint8)
-#gray = cv2.erode(gray, mat, iterations=1)
-#gray = cv2.dilate(gray, mat, iterations=1)
-
-gray = cv2.Canny(gray, 10, 110)
-gray = cv2.GaussianBlur(gray, (7,7), cv2.BORDER_DEFAULT)
-mat = np.ones((3, 3), np.uint8)
-gray = cv2.erode(gray, mat, iterations=1)
-gray = cv2.dilate(gray, mat, iterations=2)
-gray = cv2.GaussianBlur(gray, (3,3), cv2.BORDER_DEFAULT)
-cv2.imshow("Result Image", gray)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
 
 detected_circles = cv2.HoughCircles(gray, 
-                cv2.HOUGH_GRADIENT, 1.3, 20, param1 = 2,
-            param2 = 30, minRadius = 24, maxRadius = 34)
+                cv2.HOUGH_GRADIENT, 0.5, 20, param1 = 3,
+            param2 = 20, minRadius = 25, maxRadius = 36)
 
 y_vals = []
 x_dep_vals = []
@@ -139,9 +116,9 @@ for pt in detected_circles[0, :]:
         y_vals.append(b)
         x_dep_vals.append(a)
 
-    cv2.circle(img, (a, b+ycut), r, (0, 255, 0), 2)
+    cv2.circle(img, (a, b+ycut), r, (0, 255, 0), 1)
 
-    #cv2.circle(img, (a, b+ycut), 1, (0, 0, 255), 3)
+    cv2.circle(img, (a, b+ycut), 1, (0, 0, 255), 3)
 
 guess = [1/220, 200, 0.2, 350]
 sin_fit_params = spo.curve_fit(vert_sine, y_vals, x_dep_vals, guess)[0]
@@ -171,9 +148,9 @@ for first_center, second_center, i in zip(sorted_centers, sorted_centers[1:], co
     mp_y = int((center_y1 + center_y2)/2)
 
     cv2.line(img, (int(center_x1), int(center_y1)), (int(center_x2), int(center_y2)), (0, 255, 0), 1)
-    
-    cv2.line(img, (mp_x, mp_y), (mp_x + 8, mp_y + 8), (255, 255, 255), 1)
-    cv2.putText(img,'%g'%round(dist, 2), (mp_x+10, mp_y+10), 1, 0.9, (255, 255, 255), 1, cv2.LINE_AA)
+    if (i % 2 == 0):
+        cv2.line(img, (mp_x, mp_y), (mp_x + 8, mp_y + 8), (255, 255, 255), 1)
+        cv2.putText(img,'%g mm'%round(dist, 2), (mp_x+10, mp_y+10), 1, 0.9, (255, 255, 255), 1, cv2.LINE_AA)
 
 cv2.imshow("Result Image", img)
 cv2.waitKey(0)
