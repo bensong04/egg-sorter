@@ -5,6 +5,7 @@ Can be set to box only a certain amount of eggs.
 """
 DEBUG_MODE = False
 
+import numpy as np
 import cv2
 import os
 from typing import Tuple
@@ -59,16 +60,25 @@ def box_image(in_fp: str, out_dir: str, curr_count: int=-1, max_count: int=-1, d
         raise
     
     for egg_number, circ in enumerate(detected_circles[0, :]):
-        if max_count != -1 and curr_count + egg_number + 1 > max_count:
+        if max_count != -1 and curr_count + egg_number*2 + 1 > max_count:
             break
         cx, cy, rad = int(circ[0]), int(circ[1]), int(circ[2]) 
         og_dimensions = (original_color.shape[1], original_color.shape[0])
-        leftx, upy, rightx, downy = enclosing_rect(og_dimensions, (cx, cy), rad, 8)
+        leftx, upy, rightx, downy = enclosing_rect(og_dimensions, (cx, cy), rad, 9)
         cropped_egg = original_color[upy:downy, leftx:rightx]
+        # code to join mirror pairs together
+        mirror = og_dimensions[0] - 20
+        cropped_egg_mirror_img = original_color[upy:downy, (mirror-rightx):(mirror-leftx)]
+        full_pair = cv2.hconcat([cropped_egg, cropped_egg_mirror_img])
+        # we should also flip the order in which they appear to teach the model symmetry
+        full_pair_flip = cv2.hconcat([cropped_egg_mirror_img, cropped_egg])
         egg_path = os.path.join(out_dir, "%d_egg_%d.png" % (hash_fp, egg_number))
-        cv2.imwrite(egg_path, cropped_egg)
+        egg_path_flip = os.path.join(out_dir, "%d_egg_%d_flip.png" % (hash_fp, egg_number))
+        # write everything
+        cv2.imwrite(egg_path, full_pair)
+        cv2.imwrite(egg_path_flip, full_pair_flip)
 
-    return len(detected_circles[0, :])
+    return egg_number*2
 
 import argparse
 import glob
