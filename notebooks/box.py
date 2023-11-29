@@ -60,7 +60,7 @@ def box_image(in_fp: str, out_dir: str, curr_count: int=-1, max_count: int=-1, d
         raise
     
     for egg_number, circ in enumerate(detected_circles[0, :]):
-        if max_count != -1 and curr_count + egg_number*2 + 1 > max_count:
+        if max_count != -1 and curr_count + egg_number*6 + 1 > max_count:
             break
         cx, cy, rad = int(circ[0]), int(circ[1]), int(circ[2]) 
         og_dimensions = (original_color.shape[1], original_color.shape[0])
@@ -74,11 +74,24 @@ def box_image(in_fp: str, out_dir: str, curr_count: int=-1, max_count: int=-1, d
         full_pair_flip = cv2.hconcat([cropped_egg_mirror_img, cropped_egg])
         egg_path = os.path.join(out_dir, "%d_egg_%d.png" % (hash_fp, egg_number))
         egg_path_flip = os.path.join(out_dir, "%d_egg_%d_flip.png" % (hash_fp, egg_number))
+        # and do horizontal and vertical flips on both
+        egg_path_H = os.path.join(out_dir, "%d_egg_%d_H.png" % (hash_fp, egg_number))
+        full_pair_H = cv2.flip(full_pair, 0)
+        egg_path_flip_H = os.path.join(out_dir, "%d_egg_%d_flip_H.png" % (hash_fp, egg_number)) 
+        full_pair_flip_H = cv2.flip(full_pair_flip, 0)
+        egg_path_V = os.path.join(out_dir, "%d_egg_%d_H.png" % (hash_fp, egg_number))
+        full_pair_V = cv2.flip(full_pair, 1)
+        egg_path_flip_V = os.path.join(out_dir, "%d_egg_%d_flip_V.png" % (hash_fp, egg_number)) 
+        full_pair_flip_V = cv2.flip(full_pair_flip, 1)
         # write everything
         cv2.imwrite(egg_path, full_pair)
         cv2.imwrite(egg_path_flip, full_pair_flip)
+        cv2.imwrite(egg_path_H, full_pair_H)
+        cv2.imwrite(egg_path_flip_H, full_pair_flip_H)
+        cv2.imwrite(egg_path_V, full_pair_V)
+        cv2.imwrite(egg_path_flip_V, full_pair_flip_V) 
 
-    return egg_number*2
+    return egg_number*6
 
 import argparse
 import glob

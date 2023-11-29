@@ -46,7 +46,7 @@ def vert_sine_fixed_freq(y, ampl, phase, off):
 # properly fitting this function to the data. Therefore, it remains unused.
 boxy = lambda x: tanh(5*sin(x))
 
-f = fls[1] # TO BE PROPERLY IMPLEMENTED LATER
+f = joinpath(up(__file__, 1), "0072.tif") # fls[1] # TO BE PROPERLY IMPLEMENTED LATER
 
 img = cv2.imread(f, cv2.IMREAD_COLOR)
 height = img.shape[0]

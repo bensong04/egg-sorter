@@ -96,7 +96,8 @@ def disp(f):
     cv2.imshow("Result Image", img_original)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-
+"""
 for f in fls:
     disp(f)
-disp("tests/quality.jpg")
+"""
+disp("indexer/0072.tif")
